@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Eetdagboek App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --primary-bg: #f5f0e6;
+      --secondary-bg: #fdf8f3;
+      --accent: #c2a46d;
+      --text-color: #3e322d;
+      --soft-border: #d3c4ad;
+      --card-bg: #fffaf3;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Open Sans', sans-serif;
+      background: var(--primary-bg);
+      color: var(--text-color);
+    }
+
+    h2 {
+      font-family: 'Playfair Display', serif;
+      color: var(--text-color);
+      margin-top: 24px;
+    }
+
+    .nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      background: var(--secondary-bg);
+      border-top: 1px solid var(--soft-border);
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.05);
+    }
+
+    .nav button {
+      flex: 1;
+      padding: 14px 0;
+      font-size: 20px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--text-color);
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    .nav button.active {
+      background: var(--accent);
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .content {
+      padding: 24px;
+      padding-bottom: 90px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    input, select, button {
+      font-size: 16px;
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      box-sizing: border-box;
+      border: 1px solid var(--soft-border);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text-color);
+    }
+
+    button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background: #a88c5f;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--soft-border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    th, td {
+      border: 1px solid var(--soft-border);
+      padding: 8px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    th {
+      background: var(--secondary-bg);
+      font-weight: 600;
+    }
+
+    .btn {
+      cursor: pointer;
+      background: var(--secondary-bg);
+      border: 1px solid var(--soft-border);
+      padding: 6px 10px;
+      margin: 0 2px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .totaal-waardes {
+      background: #f9f3e8;
+      border: 2px solid var(--accent);
+      padding: 16px;
+      margin-bottom: 18px;
+      font-size: 18px;
+      font-weight: 600;
+      border-radius: 10px;
+      color: var(--text-color);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .verwijder-btn {
+      color: #c0392b;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .dag-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .dag-nav button {
+      font-size: 20px;
+      padding: 8px 14px;
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      transition: background 0.3s;
+    }
+
+    .dag-nav button:hover {
+      background: #a88c5f;
+    }
+
+    .dag-nav span {
+      font-family: 'Playfair Display', serif;
+      font-weight: bold;
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="content">
+
+  <!-- TAB 1: Producten toevoegen/bewerken + lijst -->
+  <div id="productenPagina">
+    <h2>Product toevoegen / bewerken</h2>
+    <input type="hidden" id="editIndex" />
+    <label>Productnaam</label>
+    <input type="text" id="productNaam" placeholder="Bijv. Appel" />
+    <label>Kcal per 100g</label>
+    <input type="number" id="kcal" placeholder="Bijv. 52" />
+    <label>Vet per 100g</label>
+    <input type="number" id="vet" placeholder="Bijv. 0.2" />
+    <label>Verzadigd vet per 100g</label>
+    <input type="number" id="verzadigd" placeholder="Bijv. 0.03" />
+    <label>Koolhydraten per 100g</label>
+    <input type="number" id="koolhydraten" placeholder="Bijv. 14" />
+    <label>Suiker per 100g</label>
+    <input type="number" id="suiker" placeholder="Bijv. 10" />
+    <label>Eiwit per 100g</label>
+    <input type="number" id="eiwit" placeholder="Bijv. 0.3" />
+    <button onclick="voegProductToe()">Opslaan</button>
+
+    <h2>Productenlijst</h2>
+    <div id="productenLijst"></div>
+  </div>
+
+  <!-- TAB 2: Eetdagboek -->
+  <div id="dagboekPagina" class="hidden">
+    <div class="dag-nav">
+      <button onclick="vorigeDag()">←</button>
+      <span id="datumWeergave"></span>
+      <button onclick="volgendeDag()">→</button>
+    </div>
+
+    <div class="totaal-waardes" id="totaalWeergave">
+      <!-- Totale waarden komen hier -->
+    </div>
+
+    <label>Maaltijd</label>
+    <select id="maaltijd">
+      <option>Ontbijt</option>
+      <option>Lunch</option>
+      <option>Diner</option>
+      <option>Tussendoor</option>
+    </select>
+
+    <label>Product</label>
+    <select id="productSelect"></select>
+
+    <label>Gram</label>
+    <input type="number" id="hoeveelheid" placeholder="Bijv. 30" />
+
+    <button onclick="voegAanDagboekToe()">Toevoegen</button>
+
+    <h2>Gegeten producten</h2>
+    <div id="dagboekLijst"></div>
+  </div>
+
+</div>
+
+<!-- Navigatie onderin -->
+<div class="nav">
+  <button id="btnProducten" onclick="toonPagina('productenPagina')" class="active">📦 Producten</button>
+  <button id="btnDagboek" onclick="toonPagina('dagboekPagina')">📓 Eetdagboek</button>
+</div>
+
+<script>
+  // Data laden of init
+  let producten = JSON.parse(localStorage.getItem('producten')) || [];
+  let eetdagboek = JSON.parse(localStorage.getItem('eetdagboek')) || {};
+  let huidigeDatum = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
+
+  // Pagina tonen
+  function toonPagina(id) {
+    document.getElementById('productenPagina').classList.add('hidden');
+    document.getElementById('dagboekPagina').classList.add('hidden');
+    document.getElementById(id).classList.remove('hidden');
+
+    document.getElementById('btnProducten').classList.remove('active');
+    document.getElementById('btnDagboek').classList.remove('active');
+    if (id === 'productenPagina') document.getElementById('btnProducten').classList.add('active');
+    if (id === 'dagboekPagina') document.getElementById('btnDagboek').classList.add('active');
+
+    if (id === 'productenPagina') {
+      toonProducten();
+    }
+    if (id === 'dagboekPagina') {
+        
+      toonDatum();
+      toonProductSelect();
+      toonDagboek();
+    }
+  }
+
+  // Product toevoegen / bewerken
+  function voegProductToe() {
+    const naam = document.getElementById('productNaam').value.trim();
+    const kcal = parseFloat(document.getElementById('kcal').value);
+    const vet = parseFloat(document.getElementById('vet').value);
+    const verzadigd = parseFloat(document.getElementById('verzadigd').value);
+    const koolhydraten = parseFloat(document.getElementById('koolhydraten').value);
+    const suiker = parseFloat(document.getElementById('suiker').value);
+    const eiwit = parseFloat(document.getElementById('eiwit').value);
+
+    if (!naam) { alert('Vul een productnaam in.'); return; }
+    if ([kcal, vet, verzadigd, koolhydraten, suiker, eiwit].some(v => isNaN(v))) {
+      alert('Vul alle voedingswaarden correct in.');
+      return;
+    }
+
+    const idx = document.getElementById('editIndex').value;
+    if (idx) {
+      producten[idx] = { naam, kcal, vet, verzadigd, koolhydraten, suiker, eiwit };
+    } else {
+      producten.push({ naam, kcal, vet, verzadigd, koolhydraten, suiker, eiwit });
+    }
+    localStorage.setItem('producten', JSON.stringify(producten));
+    resetProductForm();
+    toonProducten();
+    toonProductSelect();
+  }
+
+  function resetProductForm() {
+    document.getElementById('editIndex').value = '';
+    document.getElementById('productNaam').value = '';
+    document.getElementById('kcal').value = '';
+    document.getElementById('vet').value = '';
+    document.getElementById('verzadigd').value = '';
+    document.getElementById('koolhydraten').value = '';
+    document.getElementById('suiker').value = '';
+    document.getElementById('eiwit').value = '';
+  }
+
+  function toonProducten() {
+    if (producten.length === 0) {
+      document.getElementById('productenLijst').innerHTML = '<p>Geen producten toegevoegd.</p>';
+      return;
+    }
+    let html = '<table><thead><tr><th>Naam</th><th>Kcal</th><th>Vet</th><th>Verzadigd</th><th>Koolhydraten</th><th>Suiker</th><th>Eiwit</th><th>Acties</th></tr></thead><tbody>';
+    producten.forEach((p, i) => {
+      html += `<tr>
+        <td>${p.naam}</td>
+        <td>${p.kcal}</td>
+        <td>${p.vet}</td>
+        <td>${p.verzadigd}</td>
+        <td>${p.koolhydraten}</td>
+        <td>${p.suiker}</td>
+        <td>${p.eiwit}</td>
+        <td>
+          <button class="btn" onclick="bewerken(${i})">✏️</button>
+          <button class="btn" onclick="verwijderProduct(${i})">🗑️</button>
+        </td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('productenLijst').innerHTML = html;
+  }
+
+  function bewerken(i) {
+    const p = producten[i];
+    document.getElementById('editIndex').value = i;
+    document.getElementById('productNaam').value = p.naam;
+    document.getElementById('kcal').value = p.kcal;
+    document.getElementById('vet').value = p.vet;
+    document.getElementById('verzadigd').value = p.verzadigd;
+    document.getElementById('koolhydraten').value = p.koolhydraten;
+    document.getElementById('suiker').value = p.suiker;
+    document.getElementById('eiwit').value = p.eiwit;
+    toonPagina('productenPagina');
+  }
+
+  function verwijderProduct(i) {
+    if (!confirm(`Weet je zeker dat je "${producten[i].naam}" wilt verwijderen?`)) return;
+    producten.splice(i, 1);
+    localStorage.setItem('producten', JSON.stringify(producten));
+    toonProducten();
+    toonProductSelect();
+  }
+
+  // Eetdagboek functies
+  function toonDatum() {
+    document.getElementById('datumWeergave').textContent = huidigeDatum;
+  }
+
+  function vorigeDag() {
+    const d = new Date(huidigeDatum);
+    d.setDate(d.getDate() - 1);
+    huidigeDatum = d.toISOString().split('T')[0];
+    toonDatum();
+    toonDagboek();
+  }
+
+  function volgendeDag() {
+    const d = new Date(huidigeDatum);
+    d.setDate(d.getDate() + 1);
+    huidigeDatum = d.toISOString().split('T')[0];
+    toonDatum();
+    toonDagboek();
+  }
+
+  function toonProductSelect() {
+    const select = document.getElementById('productSelect');
+    select.innerHTML = '';
+    if (producten.length === 0) {
+      select.innerHTML = '<option>Geen producten</option>';
+      return;
+    }
+    producten.forEach((p, i) => {
+      select.innerHTML += `<option value="${i}">${p.naam}</option>`;
+    });
+  }
+
+  function voegAanDagboekToe() {
+    const maaltijd = document.getElementById('maaltijd').value;
+    const productIndex = parseInt(document.getElementById('productSelect').value);
+    const hoeveelheid = parseFloat(document.getElementById('hoeveelheid').value);
+
+    if (isNaN(productIndex) || productIndex < 0 || productIndex >= producten.length) {
+      alert('Selecteer een geldig product.');
+      return;
+    }
+    if (isNaN(hoeveelheid) || hoeveelheid <= 0) {
+      alert('Vul een geldige hoeveelheid in.');
+      return;
+    }
+
+    if (!eetdagboek[huidigeDatum]) eetdagboek[huidigeDatum] = [];
+
+    eetdagboek[huidigeDatum].push({ maaltijd, productIndex, hoeveelheid });
+    localStorage.setItem('eetdagboek', JSON.stringify(eetdagboek));
+    document.getElementById('hoeveelheid').value = '';
+    toonDagboek();
+  }
+
+  function toonDagboek() {
+    const lijstDiv = document.getElementById('dagboekLijst');
+    const dagItems = eetdagboek[huidigeDatum] || [];
+
+    if (dagItems.length === 0) {
+      lijstDiv.innerHTML = '<p>Geen producten toegevoegd voor deze dag.</p>';
+      updateTotaal(null);
+      return;
+    }
+
+    let html = '<table><thead><tr><th>Maaltijd</th><th>Product</th><th>Hoeveelheid (g)</th><th>Kcal</th><th>Vet</th><th>Verzadigd</th><th>Koolhydraten</th><th>Suiker</th><th>Eiwit</th><th>Verwijder</th></tr></thead><tbody>';
+
+    let totaal = { kcal:0, vet:0, verzadigd:0, koolhydraten:0, suiker:0, eiwit:0 };
+
+    dagItems.forEach((item, i) => {
+      const p = producten[item.productIndex];
+      if (!p) return; // product bestaat niet meer
+
+      const factor = item.hoeveelheid / 100;
+
+      const kcal = p.kcal * factor;
+      const vet = p.vet * factor;
+      const verzadigd = p.verzadigd * factor;
+      const koolhydraten = p.koolhydraten * factor;
+      const suiker = p.suiker * factor;
+      const eiwit = p.eiwit * factor;
+
+      totaal.kcal += kcal;
+      totaal.vet += vet;
+      totaal.verzadigd += verzadigd;
+      totaal.koolhydraten += koolhydraten;
+      totaal.suiker += suiker;
+      totaal.eiwit += eiwit;
+
+      html += `<tr>
+        <td>${item.maaltijd}</td>
+        <td>${p.naam}</td>
+        <td>${item.hoeveelheid}</td>
+        <td>${kcal.toFixed(1)}</td>
+        <td>${vet.toFixed(2)}</td>
+        <td>${verzadigd.toFixed(2)}</td>
+        <td>${koolhydraten.toFixed(2)}</td>
+        <td>${suiker.toFixed(2)}</td>
+        <td>${eiwit.toFixed(2)}</td>
+        <td><span class="verwijder-btn" onclick="verwijderUitDagboek(${i})">✖️</span></td>
+      </tr>`;
+    });
+
+    html += '</tbody></table>';
+    lijstDiv.innerHTML = html;
+    updateTotaal(totaal);
+  }
+
+  function updateTotaal(totaal) {
+    const totaalDiv = document.getElementById('totaalWeergave');
+    if (!totaal) {
+      totaalDiv.innerHTML = '';
+      return;
+    }
+    totaalDiv.innerHTML = `
+      Dag totaal: 
+      Kcal: ${totaal.kcal.toFixed(1)} |
+      Vet: ${totaal.vet.toFixed(2)} g |
+      Verzadigd vet: ${totaal.verzadigd.toFixed(2)} g |
+      Koolhydraten: ${totaal.koolhydraten.toFixed(2)} g |
+      Suiker: ${totaal.suiker.toFixed(2)} g |
+      Eiwit: ${totaal.eiwit.toFixed(2)} g
+    `;
+  }
+
+  function verwijderUitDagboek(index) {
+    if (!confirm('Weet je zeker dat je dit product uit het dagboek wilt verwijderen?')) return;
+    eetdagboek[huidigeDatum].splice(index, 1);
+    localStorage.setItem('eetdagboek', JSON.stringify(eetdagboek));
+    toonDagboek();
+  }
+
+  // Init
+  toonPagina('productenPagina');
+</script>
+
+</body>
+</html>
